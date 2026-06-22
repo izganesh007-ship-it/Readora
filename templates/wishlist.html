@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}My Wishlist - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.wishlist-header { padding: 40px 4% 20px; }
+.wishlist-header h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; }
+.wishlist-header p { color: var(--netflix-gray); font-size: 14px; }
+.empty-wishlist { text-align: center; padding: 100px 4%; color: var(--netflix-gray); }
+.empty-wishlist i { font-size: 64px; margin-bottom: 20px; color: var(--netflix-card); }
+.empty-wishlist h3 { font-size: 20px; margin-bottom: 8px; color: var(--netflix-white); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wishlist-header">
+    <h1>My Wishlist</h1>
+    <p>{{ books|length }} book{% if books|length != 1 %}s{% endif %} saved</p>
+</div>
+
+{% if books %}
+<div class="card-grid">
+    {% for book in books %}
+    <div class="book-card" onclick="window.location.href='{{ url_for('book_detail', book_id=book.id) }}'">
+        <img src="{{ url_for('static', filename='uploads/covers/' + book.cover_image) if book.cover_image else 'https://via.placeholder.com/300x450/1f1f1f/808080?text=' + book.title|urlencode }}" alt="{{ book.title }}">
+        <div class="book-card-info">
+            <div class="book-card-title">{{ book.title }}</div>
+            <div class="book-card-meta">{{ book.author }}</div>
+            {% if book.price == 0 %}
+            <div class="book-card-free">FREE</div>
+            {% else %}
+            <div class="book-card-price">${{ "%.2f"|format(book.price) }}</div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-wishlist">
+    <i class="fas fa-heart"></i>
+    <h3>Your wishlist is empty</h3>
+    <p>Browse our collection and save books you love.</p>
+    <a href="{{ url_for('browse') }}" class="btn btn-primary" style="margin-top:20px"><i class="fas fa-compass"></i> Browse Books</a>
+</div>
+{% endif %}
+{% endblock %}

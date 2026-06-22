@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Purchase {{ book.title }} - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.purchase-container { max-width: 600px; margin: 60px auto; padding: 0 4%; text-align: center; }
+.purchase-cover { width: 180px; border-radius: 8px; margin-bottom: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+.purchase-title { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+.purchase-author { color: var(--netflix-gray); margin-bottom: 24px; }
+.purchase-price { font-size: 48px; font-weight: 800; color: var(--netflix-red); margin-bottom: 24px; }
+.purchase-form { background: var(--netflix-dark); padding: 32px; border-radius: 8px; text-align: left; }
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; color: var(--netflix-light-gray); }
+.form-group input {
+    width: 100%; padding: 12px 16px; background: var(--netflix-black);
+    border: 1px solid #333; border-radius: var(--border-radius); color: var(--netflix-white);
+    font-size: 14px;
+}
+.form-group input:focus { outline: none; border-color: var(--netflix-red); }
+.bitcoin-info { background: rgba(247,147,26,0.1); border: 1px solid #f7931a; padding: 16px; border-radius: 8px; margin-bottom: 20px; }
+.bitcoin-info i { color: #f7931a; margin-right: 8px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="purchase-container">
+    <img class="purchase-cover" src="{{ url_for('static', filename='uploads/covers/' + book.cover_image) if book.cover_image else 'https://via.placeholder.com/300x450/1f1f1f/808080?text=' + book.title|urlencode }}" alt="{{ book.title }}">
+    <h1 class="purchase-title">{{ book.title }}</h1>
+    <p class="purchase-author">by {{ book.author }}</p>
+    <div class="purchase-price">${{ "%.2f"|format(book.price) }}</div>
+    <div class="purchase-form">
+        <div class="bitcoin-info">
+            <i class="fab fa-bitcoin"></i> Pay with Bitcoin
+        </div>
+        <form method="POST">
+            <div class="form-group">
+                <label for="email">Email Address (for download link)</label>
+                <input type="email" id="email" name="email" placeholder="your@email.com" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">
+                <i class="fab fa-bitcoin"></i> Proceed to Payment
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

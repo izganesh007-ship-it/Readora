@@ -1,0 +1,59 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block admin_content %}
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-book"></i></div>
+        <div class="stat-value">{{ stats.total_books }}</div>
+        <div class="stat-label">Total Books</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
+        <div class="stat-value">{{ stats.total_orders }}</div>
+        <div class="stat-label">Total Orders</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+        <div class="stat-value">${{ "%.2f"|format(stats.total_revenue) }}</div>
+        <div class="stat-label">Revenue</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-download"></i></div>
+        <div class="stat-value">{{ stats.total_downloads }}</div>
+        <div class="stat-label">Downloads</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+        <div class="stat-value">{{ stats.pending_orders }}</div>
+        <div class="stat-label">Pending</div>
+    </div>
+</div>
+
+<div class="admin-section">
+    <h2 class="section-title">Recent Orders</h2>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Book</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in stats.recent_orders %}
+            <tr>
+                <td>#{{ order.id }}</td>
+                <td>{{ order.book.title if order.book else 'Unknown' }}</td>
+                <td>${{ "%.2f"|format(order.amount_usd) }}</td>
+                <td><span class="badge badge-{{ order.payment_status }}">{{ order.payment_status }}</span></td>
+                <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

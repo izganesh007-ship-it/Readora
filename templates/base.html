@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ app_name }}{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --netflix-black: #141414;
+            --netflix-dark: #181818;
+            --netflix-darker: #0b0b0b;
+            --netflix-red: #e50914;
+            --netflix-red-hover: #f40612;
+            --netflix-gray: #808080;
+            --netflix-light-gray: #b3b3b3;
+            --netflix-white: #ffffff;
+            --netflix-card: #1f1f1f;
+            --netflix-card-hover: #2a2a2a;
+            --border-radius: 4px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--netflix-black);
+            color: var(--netflix-white);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--netflix-darker); }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            padding: 0 4%; height: 68px;
+            display: flex; align-items: center; justify-content: space-between;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7) 10%, transparent);
+            transition: var(--transition);
+        }
+        .navbar.scrolled {
+            background: var(--netflix-black);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+        .nav-left, .nav-right { display: flex; align-items: center; gap: 25px; }
+        .logo {
+            font-size: 28px; font-weight: 800; color: var(--netflix-red);
+            text-decoration: none; letter-spacing: -1px; text-transform: uppercase;
+        }
+        .logo span { color: var(--netflix-white); }
+        .nav-links { display: flex; gap: 20px; list-style: none; }
+        .nav-links a {
+            color: var(--netflix-light-gray); text-decoration: none;
+            font-size: 14px; font-weight: 500; transition: var(--transition);
+        }
+        .nav-links a:hover { color: var(--netflix-white); }
+        .nav-icon {
+            color: var(--netflix-white); font-size: 20px; cursor: pointer;
+            transition: var(--transition); position: relative;
+        }
+        .nav-icon:hover { color: var(--netflix-light-gray); }
+        .wishlist-badge {
+            position: absolute; top: -8px; right: -8px;
+            background: var(--netflix-red); color: white; font-size: 10px;
+            width: 18px; height: 18px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-weight: 700;
+        }
+        .search-container { position: relative; }
+        .search-input {
+            background: rgba(0,0,0,0.75); border: 1px solid var(--netflix-white);
+            color: var(--netflix-white); padding: 8px 35px 8px 12px;
+            border-radius: var(--border-radius); width: 0; opacity: 0;
+            transition: var(--transition); font-size: 14px;
+        }
+        .search-input.active { width: 250px; opacity: 1; }
+        .search-input:focus { outline: none; border-color: var(--netflix-red); }
+        .search-btn {
+            position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; color: var(--netflix-white); cursor: pointer;
+        }
+        .main-content { min-height: 100vh; padding-top: 68px; }
+        .btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 12px 28px; border-radius: var(--border-radius);
+            font-size: 14px; font-weight: 600; text-decoration: none;
+            cursor: pointer; border: none; transition: var(--transition);
+        }
+        .btn-primary { background: var(--netflix-red); color: var(--netflix-white); }
+        .btn-primary:hover { background: var(--netflix-red-hover); transform: translateY(-1px); }
+        .btn-secondary { background: rgba(255,255,255,0.2); color: var(--netflix-white); backdrop-filter: blur(10px); }
+        .btn-secondary:hover { background: rgba(255,255,255,0.3); }
+        .btn-outline { background: transparent; border: 1px solid var(--netflix-gray); color: var(--netflix-white); }
+        .btn-outline:hover { border-color: var(--netflix-white); }
+        .btn-sm { padding: 8px 16px; font-size: 13px; }
+        .card-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px; padding: 0 4%;
+        }
+        .book-card {
+            position: relative; border-radius: 6px; overflow: hidden;
+            cursor: pointer; transition: var(--transition); background: var(--netflix-card);
+        }
+        .book-card:hover { transform: scale(1.05); z-index: 10; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .book-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; }
+        .book-card-info {
+            padding: 12px; opacity: 0; position: absolute; bottom: 0; left: 0; right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.95), transparent);
+            transition: var(--transition);
+        }
+        .book-card:hover .book-card-info { opacity: 1; }
+        .book-card-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .book-card-meta { font-size: 12px; color: var(--netflix-light-gray); }
+        .book-card-price { color: var(--netflix-red); font-weight: 700; font-size: 13px; }
+        .book-card-free { color: #46d369; font-weight: 700; font-size: 13px; }
+        .row-section { margin-bottom: 40px; }
+        .row-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 4%; margin-bottom: 15px;
+        }
+        .row-title { font-size: 20px; font-weight: 700; color: var(--netflix-light-gray); transition: var(--transition); }
+        .row-title:hover { color: var(--netflix-white); }
+        .row-see-all { font-size: 13px; color: var(--netflix-gray); text-decoration: none; transition: var(--transition); }
+        .row-see-all:hover { color: var(--netflix-white); }
+        .horizontal-scroll {
+            display: flex; gap: 8px; padding: 0 4%; overflow-x: auto;
+            scroll-behavior: smooth; scrollbar-width: none;
+        }
+        .horizontal-scroll::-webkit-scrollbar { display: none; }
+        .horizontal-scroll .book-card { flex: 0 0 auto; width: 200px; }
+        .hero {
+            position: relative; height: 85vh; min-height: 600px;
+            display: flex; align-items: flex-end; padding: 0 4% 80px;
+            background-size: cover; background-position: center;
+        }
+        .hero::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to top, var(--netflix-black) 0%, rgba(20,20,20,0.6) 40%, rgba(20,20,20,0.2) 70%, rgba(20,20,20,0.4) 100%);
+        }
+        .hero-content { position: relative; z-index: 2; max-width: 600px; }
+        .hero-tag {
+            display: inline-block; background: var(--netflix-red); color: white;
+            padding: 4px 12px; border-radius: 2px; font-size: 12px; font-weight: 700;
+            text-transform: uppercase; margin-bottom: 16px; letter-spacing: 1px;
+        }
+        .hero-title { font-size: 48px; font-weight: 800; line-height: 1.1; margin-bottom: 16px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        .hero-meta { display: flex; gap: 15px; align-items: center; margin-bottom: 20px; font-size: 15px; }
+        .hero-rating { color: #46d369; font-weight: 700; }
+        .hero-year { color: var(--netflix-light-gray); }
+        .hero-description { font-size: 16px; line-height: 1.6; color: var(--netflix-light-gray); margin-bottom: 24px; max-width: 500px; }
+        .hero-buttons { display: flex; gap: 12px; }
+        .footer {
+            padding: 60px 4% 30px; border-top: 1px solid #2a2a2a; margin-top: 60px;
+        }
+        .footer-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px; max-width: 1000px;
+        }
+        .footer-section h4 { font-size: 14px; font-weight: 600; margin-bottom: 16px; color: var(--netflix-light-gray); }
+        .footer-links { list-style: none; }
+        .footer-links li { margin-bottom: 10px; }
+        .footer-links a { color: var(--netflix-gray); text-decoration: none; font-size: 13px; transition: var(--transition); }
+        .footer-links a:hover { color: var(--netflix-light-gray); text-decoration: underline; }
+        .footer-bottom { margin-top: 40px; padding-top: 20px; border-top: 1px solid #2a2a2a; text-align: center; color: var(--netflix-gray); font-size: 13px; }
+        .flash-messages { position: fixed; top: 80px; right: 20px; z-index: 9999; max-width: 400px; }
+        .flash-message { padding: 16px 20px; border-radius: var(--border-radius); margin-bottom: 10px; font-size: 14px; font-weight: 500; animation: slideIn 0.3s ease; backdrop-filter: blur(10px); }
+        .flash-success { background: rgba(70, 211, 105, 0.9); color: white; }
+        .flash-error { background: rgba(229, 9, 20, 0.9); color: white; }
+        .flash-info { background: rgba(255, 255, 255, 0.15); color: white; border: 1px solid rgba(255,255,255,0.2); }
+        .flash-warning { background: rgba(255, 193, 7, 0.9); color: #000; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @media (max-width: 768px) {
+            .navbar { padding: 0 4%; height: 56px; }
+            .nav-links { display: none; }
+            .hero { height: 70vh; min-height: 400px; }
+            .hero-title { font-size: 32px; }
+            .hero-description { font-size: 14px; }
+            .card-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 0 4%; }
+            .horizontal-scroll .book-card { width: 140px; }
+            .row-title { font-size: 16px; }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar" id="navbar">
+        <div class="nav-left">
+            <a href="{{ url_for('index') }}" class="logo">Read<span>ora</span></a>
+            <ul class="nav-links">
+                <li><a href="{{ url_for('index') }}">Home</a></li>
+                <li><a href="{{ url_for('browse') }}">Browse</a></li>
+                <li><a href="{{ url_for('browse', price='free') }}">Free Books</a></li>
+                <li><a href="{{ url_for('browse', price='paid') }}">Premium</a></li>
+            </ul>
+        </div>
+        <div class="nav-right">
+            <div class="search-container">
+                <input type="text" class="search-input" id="searchInput" placeholder="Search books, authors...">
+                <button class="search-btn" onclick="toggleSearch()"><i class="fas fa-search"></i></button>
+            </div>
+            <a href="{{ url_for('wishlist') }}" class="nav-icon" title="Wishlist">
+                <i class="fas fa-heart"></i>
+                <span class="wishlist-badge" id="wishlistCount" style="display:none">0</span>
+            </a>
+        </div>
+    </nav>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="footer-grid">
+            <div class="footer-section">
+                <h4>Readora</h4>
+                <ul class="footer-links">
+                    <li><a href="{{ url_for('index') }}">Home</a></li>
+                    <li><a href="{{ url_for('browse') }}">Browse All</a></li>
+                    <li><a href="{{ url_for('browse', price='free') }}">Free eBooks</a></li>
+                    <li><a href="{{ url_for('browse', price='paid') }}">Premium Collection</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Categories</h4>
+                <ul class="footer-links">
+                    {% for cat in categories[:6] %}
+                    <li><a href="{{ url_for('browse', category=cat.name) }}">{{ cat.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Support</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">How to Download</a></li>
+                    <li><a href="#">Payment Guide</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Legal</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Cookie Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; {{ current_year }} {{ app_name }}. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            navbar.classList.toggle('scrolled', window.scrollY > 50);
+        });
+        function toggleSearch() {
+            const input = document.getElementById('searchInput');
+            input.classList.toggle('active');
+            if (input.classList.contains('active')) input.focus();
+        }
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && this.value.trim()) {
+                window.location.href = '/browse?search=' + encodeURIComponent(this.value.trim());
+            }
+        });
+        function updateWishlistCount() {
+            const wishlist = JSON.parse((document.cookie.match(/wishlist=([^;]+)/) || [null, '[]'])[1]);
+            const badge = document.getElementById('wishlistCount');
+            if (wishlist.length > 0) { badge.textContent = wishlist.length; badge.style.display = 'flex'; }
+            else badge.style.display = 'none';
+        }
+        updateWishlistCount();
+        setTimeout(() => {
+            document.querySelectorAll('.flash-message').forEach(el => {
+                el.style.opacity = '0'; el.style.transform = 'translateX(100%)';
+                setTimeout(() => el.remove(), 300);
+            });
+        }, 5000);
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

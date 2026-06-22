@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- Hero Banner -->
+{% if hero_book %}
+<div class="hero" style="background-image: url('{{ url_for('static', filename='uploads/covers/' + hero_book.cover_image) if hero_book.cover_image else 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=1920' }}')">
+    <div class="hero-content">
+        <span class="hero-tag">Featured</span>
+        <h1 class="hero-title">{{ hero_book.title }}</h1>
+        <div class="hero-meta">
+            <span class="hero-rating"><i class="fas fa-star"></i> {{ "%.1f"|format(hero_book.rating) }}</span>
+            <span class="hero-year">{{ hero_book.author }}</span>
+            <span>{{ hero_book.page_count }} pages</span>
+        </div>
+        <p class="hero-description">{{ hero_book.description[:200] }}{% if hero_book.description|length > 200 %}...{% endif %}</p>
+        <div class="hero-buttons">
+            {% if hero_book.price == 0 %}
+            <a href="{{ url_for('read_book', book_id=hero_book.id) }}" class="btn btn-primary"><i class="fas fa-book-open"></i> Read Now</a>
+            {% else %}
+            <a href="{{ url_for('purchase', book_id=hero_book.id) }}" class="btn btn-primary"><i class="fas fa-shopping-cart"></i> Buy ${{ "%.2f"|format(hero_book.price) }}</a>
+            {% endif %}
+            <a href="{{ url_for('book_detail', book_id=hero_book.id) }}" class="btn btn-secondary"><i class="fas fa-info-circle"></i> More Info</a>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="hero" style="background-image: url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=1920')">
+    <div class="hero-content">
+        <span class="hero-tag">Welcome</span>
+        <h1 class="hero-title">Discover Your Next Great Read</h1>
+        <p class="hero-description">Premium eBooks curated just for you. From bestsellers to hidden gems, find your perfect book today.</p>
+        <div class="hero-buttons">
+            <a href="{{ url_for('browse') }}" class="btn btn-primary"><i class="fas fa-compass"></i> Browse Collection</a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Trending Row -->
+{% if trending %}
+<div class="row-section">
+    <div class="row-header">
+        <h2 class="row-title">Trending Now</h2>
+        <a href="{{ url_for('browse', sort='popular') }}" class="row-see-all">See All <i class="fas fa-chevron-right"></i></a>
+    </div>
+    <div class="horizontal-scroll">
+        {% for book in trending %}
+        <div class="book-card" onclick="window.location.href='{{ url_for('book_detail', book_id=book.id) }}'">
+            <img src="{{ url_for('static', filename='uploads/covers/' + book.cover_image) if book.cover_image else 'https://via.placeholder.com/300x450/1f1f1f/808080?text=' + book.title|urlencode }}" alt="{{ book.title }}">
+            <div class="book-card-info">
+                <div class="book-card-title">{{ book.title }}</div>
+                <div class="book-card-meta">{{ book.author }}</div>
+                {% if book.price == 0 %}
+                <div class="book-card-free">FREE</div>
+                {% else %}
+                <div class="book-card-price">${{ "%.2f"|format(book.price) }}</div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- New Releases Row -->
+{% if new_releases %}
+<div class="row-section">
+    <div class="row-header">
+        <h2 class="row-title">New Releases</h2>
+        <a href="{{ url_for('browse', sort='newest') }}" class="row-see-all">See All <i class="fas fa-chevron-right"></i></a>
+    </div>
+    <div class="horizontal-scroll">
+        {% for book in new_releases %}
+        <div class="book-card" onclick="window.location.href='{{ url_for('book_detail', book_id=book.id) }}'">
+            <img src="{{ url_for('static', filename='uploads/covers/' + book.cover_image) if book.cover_image else 'https://via.placeholder.com/300x450/1f1f1f/808080?text=' + book.title|urlencode }}" alt="{{ book.title }}">
+            <div class="book-card-info">
+                <div class="book-card-title">{{ book.title }}</div>
+                <div class="book-card-meta">{{ book.author }}</div>
+                {% if book.price == 0 %}
+                <div class="book-card-free">FREE</div>
+                {% else %}
+                <div class="book-card-price">${{ "%.2f"|format(book.price) }}</div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Category Rows -->
+{% for row in category_rows %}
+<div class="row-section">
+    <div class="row-header">
+        <h2 class="row-title">{{ row.category.name }}</h2>
+        <a href="{{ url_for('browse', category=row.category.name) }}" class="row-see-all">See All <i class="fas fa-chevron-right"></i></a>
+    </div>
+    <div class="horizontal-scroll">
+        {% for book in row.books %}
+        <div class="book-card" onclick="window.location.href='{{ url_for('book_detail', book_id=book.id) }}'">
+            <img src="{{ url_for('static', filename='uploads/covers/' + book.cover_image) if book.cover_image else 'https://via.placeholder.com/300x450/1f1f1f/808080?text=' + book.title|urlencode }}" alt="{{ book.title }}">
+            <div class="book-card-info">
+                <div class="book-card-title">{{ book.title }}</div>
+                <div class="book-card-meta">{{ book.author }}</div>
+                {% if book.price == 0 %}
+                <div class="book-card-free">FREE</div>
+                {% else %}
+                <div class="book-card-price">${{ "%.2f"|format(book.price) }}</div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endfor %}
+
+<!-- Free Books Row -->
+{% if free_books %}
+<div class="row-section">
+    <div class="row-header">
+        <h2 class="row-title">Free to Read</h2>
+        <a href="{{ url_for('browse', price='free') }}" class="row-see-all">See All <i class="fas fa-chevron-right"></i></a>
+    </div>
+    <div class="horizontal-scroll">
+        {% for book in free_books %}
+        <div class="book-card" onclick="window.location.href='{{ url_for('book_detail', book_id=book.id) }}'">
+            <img src="{{ url_for('static', filename='uploads/covers/' + book.cover_image) if book.cover_image else 'https://via.placeholder.com/300x450/1f1f1f/808080?text=' + book.title|urlencode }}" alt="{{ book.title }}">
+            <div class="book-card-info">
+                <div class="book-card-title">{{ book.title }}</div>
+                <div class="book-card-meta">{{ book.author }}</div>
+                <div class="book-card-free">FREE</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

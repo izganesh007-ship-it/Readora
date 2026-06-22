@@ -1,0 +1,33 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}Orders{% endblock %}
+
+{% block admin_content %}
+<h2 class="section-title">All Orders</h2>
+<table class="admin-table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Book</th>
+            <th>Email</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Paid</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for order in orders %}
+        <tr>
+            <td>#{{ order.id }}</td>
+            <td>{{ order.book.title if order.book else 'Deleted' }}</td>
+            <td>{{ order.email }}</td>
+            <td>${{ "%.2f"|format(order.amount_usd) }}</td>
+            <td><span class="badge badge-{{ order.payment_status }}">{{ order.payment_status }}</span></td>
+            <td>{{ order.created_at.strftime('%Y-%m-%d') }}</td>
+            <td>{{ order.paid_at.strftime('%Y-%m-%d') if order.paid_at else '-' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

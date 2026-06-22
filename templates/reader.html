@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Reading: {{ book.title }} - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.reader-container { height: calc(100vh - 68px); display: flex; flex-direction: column; }
+.reader-toolbar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 4%; background: var(--netflix-dark); border-bottom: 1px solid #2a2a2a;
+}
+.reader-toolbar h2 { font-size: 16px; font-weight: 600; }
+.reader-frame { flex: 1; border: none; width: 100%; background: #1a1a1a; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="reader-container">
+    <div class="reader-toolbar">
+        <h2><i class="fas fa-book-open"></i> {{ book.title }}</h2>
+        <div>
+            <a href="{{ url_for('book_detail', book_id=book.id) }}" class="btn btn-sm btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+        </div>
+    </div>
+    <iframe class="reader-frame" src="{{ url_for('serve_pdf', book_id=book.id) }}" title="{{ book.title }}"></iframe>
+</div>
+{% endblock %}

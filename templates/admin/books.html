@@ -1,0 +1,42 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}Manage Books{% endblock %}
+
+{% block admin_content %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+    <h2 class="section-title">All Books</h2>
+    <a href="{{ url_for('admin_new_book') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Add New Book</a>
+</div>
+
+<table class="admin-table">
+    <thead>
+        <tr>
+            <th>Cover</th>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for book in books %}
+        <tr>
+            <td><img src="{{ url_for('static', filename='uploads/covers/' + book.cover_image) if book.cover_image else 'https://via.placeholder.com/50x75' }}" style="width:40px;height:60px;object-fit:cover;border-radius:4px"></td>
+            <td>{{ book.title }}</td>
+            <td>{{ book.author }}</td>
+            <td>{{ book.category }}</td>
+            <td>{% if book.price == 0 %}Free{% else %}${{ "%.2f"|format(book.price) }}{% endif %}</td>
+            <td><span class="badge badge-{{ 'paid' if book.is_active else 'expired' }}">{{ 'Active' if book.is_active else 'Inactive' }}</span></td>
+            <td>
+                <a href="{{ url_for('admin_edit_book', book_id=book.id) }}" class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></a>
+                <form method="POST" action="{{ url_for('admin_delete_book', book_id=book.id) }}" style="display:inline" onsubmit="return confirm('Delete this book?')">
+                    <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}{{ 'Edit' if book else 'New' }} Book{% endblock %}
+
+{% block admin_content %}
+<form method="POST" enctype="multipart/form-data">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="form-group">
+            <label>Title</label>
+            <input type="text" name="title" value="{{ book.title if book else '' }}" required>
+        </div>
+        <div class="form-group">
+            <label>Author</label>
+            <input type="text" name="author" value="{{ book.author if book else '' }}" required>
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Description</label>
+        <textarea name="description" rows="4">{{ book.description if book else '' }}</textarea>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px">
+        <div class="form-group">
+            <label>Price (USD, 0 for free)</label>
+            <input type="number" name="price" step="0.01" value="{{ "%.2f"|format(book.price) if book else '0.00' }}" required>
+        </div>
+        <div class="form-group">
+            <label>Category</label>
+            <select name="category" required>
+                {% for cat in categories %}
+                <option value="{{ cat.name }}" {% if book and book.category == cat.name %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Page Count</label>
+            <input type="number" name="page_count" value="{{ book.page_count if book else '0' }}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Tags (comma separated)</label>
+        <input type="text" name="tags" value="{{ book.tags if book else '' }}" placeholder="fiction, bestseller, classic">
+    </div>
+    <div class="checkbox-group" style="margin-bottom:20px">
+        <label class="checkbox-item"><input type="checkbox" name="is_featured" {% if book and book.is_featured %}checked{% endif %}> Featured</label>
+        <label class="checkbox-item"><input type="checkbox" name="is_trending" {% if book and book.is_trending %}checked{% endif %}> Trending</label>
+        <label class="checkbox-item"><input type="checkbox" name="is_new_release" {% if book and book.is_new_release %}checked{% endif %}> New Release</label>
+        {% if book %}<label class="checkbox-item"><input type="checkbox" name="is_active" {% if book.is_active %}checked{% endif %}> Active</label>{% endif %}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+        <div class="form-group">
+            <label>Cover Image {% if book %}(leave empty to keep current){% endif %}</label>
+            <input type="file" name="cover_image" accept="image/*">
+        </div>
+        <div class="form-group">
+            <label>Book PDF {% if book %}(leave empty to keep current){% endif %}</label>
+            <input type="file" name="book_file" accept=".pdf">
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">{{ 'Update' if book else 'Create' }} Book</button>
+    <a href="{{ url_for('admin_books') }}" class="btn" style="background:#333;color:#fff;margin-left:12px">Cancel</a>
+</form>
+{% endblock %}

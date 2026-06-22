@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Payment - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.payment-container { max-width: 500px; margin: 60px auto; padding: 0 4%; text-align: center; }
+.payment-status { background: var(--netflix-dark); padding: 40px; border-radius: 8px; }
+.qr-placeholder { width: 200px; height: 200px; background: white; margin: 20px auto; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.qr-placeholder i { font-size: 80px; color: #333; }
+.btc-address {
+    background: var(--netflix-black); padding: 16px; border-radius: 8px;
+    font-family: monospace; font-size: 14px; word-break: break-all;
+    border: 1px solid #333; margin: 16px 0;
+}
+.copy-btn { background: var(--netflix-card); border: none; color: white; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; }
+.copy-btn:hover { background: #333; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="payment-container">
+    <div class="payment-status">
+        <i class="fab fa-bitcoin" style="font-size:48px;color:#f7931a"></i>
+        <h2 style="margin:16px 0">Awaiting Payment</h2>
+        <p style="color:var(--netflix-gray)">Send exactly <strong>${{ "%.2f"|format(book.price) }}</strong> worth of BTC to:</p>
+        <div class="qr-placeholder">
+            <i class="fas fa-qrcode"></i>
+        </div>
+        <div class="btc-address" id="btcAddress">{{ btc_address }}</div>
+        <button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('btcAddress').textContent)"><i class="fas fa-copy"></i> Copy Address</button>
+        <p style="margin-top:24px;color:var(--netflix-gray);font-size:14px">
+            Order #{{ order.id }}<br>
+            Download link will be sent to {{ order.email }} after confirmation.
+        </p>
+    </div>
+</div>
+<script>
+setInterval(() => {
+    fetch('/api/check-payment/{{ order.id }}')
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'paid' && data.download_url) {
+            window.location.href = data.download_url;
+        }
+    });
+}, 10000);
+</script>
+{% endblock %}

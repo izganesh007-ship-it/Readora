@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}{{ book.title }} - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.detail-container { padding: 40px 4%; display: grid; grid-template-columns: 300px 1fr; gap: 40px; max-width: 1200px; margin: 0 auto; }
+.detail-cover { border-radius: 8px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+.detail-cover img { width: 100%; display: block; }
+.detail-info h1 { font-size: 36px; font-weight: 800; margin-bottom: 8px; }
+.detail-meta { display: flex; gap: 16px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+.detail-meta span { font-size: 14px; color: var(--netflix-light-gray); }
+.detail-meta .rating { color: #46d369; font-weight: 700; }
+.detail-meta .category { background: rgba(255,255,255,0.1); padding: 4px 12px; border-radius: 4px; }
+.detail-description { font-size: 16px; line-height: 1.7; color: var(--netflix-light-gray); margin-bottom: 24px; }
+.detail-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+.detail-tag { background: var(--netflix-dark); padding: 6px 14px; border-radius: 20px; font-size: 13px; color: var(--netflix-light-gray); }
+.detail-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.detail-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 30px; padding-top: 30px; border-top: 1px solid #2a2a2a; }
+.stat-item { text-align: center; }
+.stat-value { font-size: 24px; font-weight: 700; color: var(--netflix-white); }
+.stat-label { font-size: 12px; color: var(--netflix-gray); text-transform: uppercase; letter-spacing: 1px; }
+.wishlist-btn {
+    background: transparent; border: 1px solid var(--netflix-gray); color: var(--netflix-white);
+    padding: 12px 24px; border-radius: var(--border-radius); cursor: pointer; font-size: 14px;
+    font-weight: 600; transition: var(--transition); display: inline-flex; align-items: center; gap: 8px;
+}
+.wishlist-btn:hover { border-color: var(--netflix-red); color: var(--netflix-red); }
+.wishlist-btn.active { background: var(--netflix-red); border-color: var(--netflix-red); color: white; }
+.related-section { padding: 40px 4%; }
+.related-section h2 { font-size: 24px; font-weight: 700; margin-bottom: 20px; }
+@media (max-width: 768px) {
+    .detail-container { grid-template-columns: 1fr; }
+    .detail-cover { max-width: 250px; margin: 0 auto; }
+    .detail-info h1 { font-size: 24px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="detail-container">
+    <div class="detail-cover">
+        <img src="{{ url_for('static', filename='uploads/covers/' + book.cover_image) if book.cover_image else 'https://via.placeholder.com/400x600/1f1f1f/808080?text=' + book.title|urlencode }}" alt="{{ book.title }}">
+    </div>
+    <div class="detail-info">
+        <h1>{{ book.title }}</h1>
+        <div class="detail-meta">
+            <span class="rating"><i class="fas fa-star"></i> {{ "%.1f"|format(book.rating) }}</span>
+            <span class="category">{{ book.category }}</span>
+            <span><i class="fas fa-user"></i> {{ book.author }}</span>
+            <span><i class="fas fa-file-alt"></i> {{ book.page_count }} pages</span>
+        </div>
+        <p class="detail-description">{{ book.description or 'No description available.' }}</p>
+        {% if book.tags %}
+        <div class="detail-tags">
+            {% for tag in book.tags.split(',') %}
+            <span class="detail-tag">{{ tag.strip() }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div class="detail-actions">
+            {% if book.price == 0 %}
+            <a href="{{ url_for('read_book', book_id=book.id) }}" class="btn btn-primary"><i class="fas fa-book-open"></i> Read Online</a>
+            {% else %}
+            <a href="{{ url_for('purchase', book_id=book.id) }}" class="btn btn-primary"><i class="fas fa-shopping-cart"></i> Buy for ${{ "%.2f"|format(book.price) }}</a>
+            {% endif %}
+            <button class="wishlist-btn {% if in_wishlist %}active{% endif %}" onclick="toggleWishlist({{ book.id }}, this)">
+                <i class="fas fa-heart"></i> <span>{% if in_wishlist %}Saved{% else %}Add to Wishlist{% endif %}</span>
+            </button>
+        </div>
+        <div class="detail-stats">
+            <div class="stat-item">
+                <div class="stat-value">{{ book.view_count }}</div>
+                <div class="stat-label">Views</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ book.download_count }}</div>
+                <div class="stat-label">Downloads</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ book.created_at.strftime('%b %Y') }}</div>
+                <div class="stat-label">Published</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if related %}
+<div class="related-section">
+    <h2>More Like This</h2>
+    <div class="horizontal-scroll">
+        {% for rbook in related %}
+        <div class="book-card" onclick="window.location.href='{{ url_for('book_detail', book_id=rbook.id) }}'">
+            <img src="{{ url_for('static', filename='uploads/covers/' + rbook.cover_image) if rbook.cover_image else 'https://via.placeholder.com/300x450/1f1f1f/808080?text=' + rbook.title|urlencode }}" alt="{{ rbook.title }}">
+            <div class="book-card-info">
+                <div class="book-card-title">{{ rbook.title }}</div>
+                <div class="book-card-meta">{{ rbook.author }}</div>
+                {% if rbook.price == 0 %}
+                <div class="book-card-free">FREE</div>
+                {% else %}
+                <div class="book-card-price">${{ "%.2f"|format(rbook.price) }}</div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleWishlist(bookId, btn) {
+    fetch('/api/wishlist/toggle/' + bookId, { method: 'POST' })
+    .then(r => r.json())
+    .then(data => {
+        btn.classList.toggle('active');
+        btn.querySelector('span').textContent = data.status === 'added' ? 'Saved' : 'Add to Wishlist';
+        updateWishlistCount();
+    });
+}
+</script>
+{% endblock %}

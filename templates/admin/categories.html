@@ -1,0 +1,47 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}Categories{% endblock %}
+
+{% block admin_content %}
+<div style="display:grid;grid-template-columns:300px 1fr;gap:32px">
+    <div>
+        <h2 class="section-title">Add Category</h2>
+        <form method="POST" action="{{ url_for('admin_new_category') }}">
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" name="name" required>
+            </div>
+            <div class="form-group">
+                <label>Slug</label>
+                <input type="text" name="slug" required placeholder="e.g. science-fiction">
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea name="description" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Category</button>
+        </form>
+    </div>
+    <div>
+        <h2 class="section-title">All Categories</h2>
+        <table class="admin-table">
+            <thead>
+                <tr><th>Name</th><th>Slug</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for cat in categories %}
+                <tr>
+                    <td>{{ cat.name }}</td>
+                    <td>{{ cat.slug }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('admin_delete_category', cat_id=cat.id) }}" style="display:inline" onsubmit="return confirm('Delete this category?')">
+                            <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

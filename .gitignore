@@ -1,0 +1,17 @@
+# Readora Git Ignore
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.env
+.venv
+env/
+venv/
+readora.db
+*.db
+uploads/books/*.pdf
+uploads/covers/*
+!uploads/books/.gitkeep
+!uploads/covers/.gitkeep
+.DS_Store
+*.log

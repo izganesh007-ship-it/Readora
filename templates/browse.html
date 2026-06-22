@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Browse - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.browse-header {
+    padding: 40px 4% 20px;
+    display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 20px;
+}
+.browse-title { font-size: 32px; font-weight: 800; }
+.browse-filters { display: flex; gap: 12px; flex-wrap: wrap; }
+.filter-select {
+    background: var(--netflix-dark); color: var(--netflix-white); border: 1px solid #333;
+    padding: 8px 16px; border-radius: var(--border-radius); font-size: 14px; cursor: pointer;
+}
+.filter-select:focus { outline: none; border-color: var(--netflix-red); }
+.results-count { padding: 0 4%; color: var(--netflix-gray); font-size: 14px; margin-bottom: 20px; }
+.pagination {
+    display: flex; justify-content: center; gap: 8px; padding: 40px 4%;
+}
+.pagination a, .pagination span {
+    padding: 8px 16px; border-radius: var(--border-radius); text-decoration: none;
+    font-size: 14px; font-weight: 600; transition: var(--transition);
+}
+.pagination a { background: var(--netflix-dark); color: var(--netflix-white); }
+.pagination a:hover { background: var(--netflix-red); }
+.pagination span { background: var(--netflix-red); color: white; }
+.empty-state { text-align: center; padding: 80px 4%; color: var(--netflix-gray); }
+.empty-state i { font-size: 48px; margin-bottom: 16px; color: var(--netflix-card); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="browse-header">
+    <div>
+        <h1 class="browse-title">
+            {% if category %}{{ category }}
+            {% elif request.args.get('search') %}Search: "{{ request.args.get('search') }}"
+            {% elif request.args.get('price') == 'free' %}Free Books
+            {% elif request.args.get('price') == 'paid' %}Premium Collection
+            {% else %}Browse All{% endif %}
+        </h1>
+    </div>
+    <div class="browse-filters">
+        <select class="filter-select" onchange="window.location.href=this.value">
+            <option value="{{ url_for('browse', category=category, search=request.args.get('search',''), price=request.args.get('price',''), sort='newest') }}" {% if request.args.get('sort','newest') == 'newest' %}selected{% endif %}>Newest</option>
+            <option value="{{ url_for('browse', category=category, search=request.args.get('search',''), price=request.args.get('price',''), sort='popular') }}" {% if request.args.get('sort') == 'popular' %}selected{% endif %}>Most Popular</option>
+            <option value="{{ url_for('browse', category=category, search=request.args.get('search',''), price=request.args.get('price',''), sort='price_low') }}" {% if request.args.get('sort') == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+            <option value="{{ url_for('browse', category=category, search=request.args.get('search',''), price=request.args.get('price',''), sort='price_high') }}" {% if request.args.get('sort') == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+            <option value="{{ url_for('browse', category=category, search=request.args.get('search',''), price=request.args.get('price',''), sort='rating') }}" {% if request.args.get('sort') == 'rating' %}selected{% endif %}>Highest Rated</option>
+        </select>
+    </div>
+</div>
+
+<div class="results-count">{{ books.total }} result{% if books.total != 1 %}s{% endif %} found</div>
+
+{% if books.items %}
+<div class="card-grid">
+    {% for book in books.items %}
+    <div class="book-card" onclick="window.location.href='{{ url_for('book_detail', book_id=book.id) }}'">
+        <img src="{{ url_for('static', filename='uploads/covers/' + book.cover_image) if book.cover_image else 'https://via.placeholder.com/300x450/1f1f1f/808080?text=' + book.title|urlencode }}" alt="{{ book.title }}">
+        <div class="book-card-info">
+            <div class="book-card-title">{{ book.title }}</div>
+            <div class="book-card-meta">{{ book.author }}</div>
+            {% if book.price == 0 %}
+            <div class="book-card-free">FREE</div>
+            {% else %}
+            <div class="book-card-price">${{ "%.2f"|format(book.price) }}</div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if books.pages > 1 %}
+<div class="pagination">
+    {% if books.has_prev %}
+    <a href="{{ url_for('browse', page=books.prev_num, category=category, search=request.args.get('search',''), price=request.args.get('price',''), sort=request.args.get('sort','newest')) }}"><i class="fas fa-chevron-left"></i></a>
+    {% endif %}
+    {% for page_num in books.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+        {% if page_num %}
+            {% if page_num == books.page %}
+            <span>{{ page_num }}</span>
+            {% else %}
+            <a href="{{ url_for('browse', page=page_num, category=category, search=request.args.get('search',''), price=request.args.get('price',''), sort=request.args.get('sort','newest')) }}">{{ page_num }}</a>
+            {% endif %}
+        {% else %}
+        <span style="color:var(--netflix-gray)">...</span>
+        {% endif %}
+    {% endfor %}
+    {% if books.has_next %}
+    <a href="{{ url_for('browse', page=books.next_num, category=category, search=request.args.get('search',''), price=request.args.get('price',''), sort=request.args.get('sort','newest')) }}"><i class="fas fa-chevron-right"></i></a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% else %}
+<div class="empty-state">
+    <i class="fas fa-book"></i>
+    <h3>No books found</h3>
+    <p>Try adjusting your search or filters.</p>
+</div>
+{% endif %}
+{% endblock %}
