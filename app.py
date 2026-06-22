@@ -526,3 +526,20 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(debug=False, host='0.0.0.0', port=5000)
+
+
+# AUTO-INIT FOR RENDER
+@app.before_request
+def auto_init():
+    if not hasattr(app, '_db_initialized'):
+        db.create_all()
+        os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], 'books'), exist_ok=True)
+        os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], 'covers'), exist_ok=True)
+        if Category.query.count() == 0:
+            defaults = [('Fiction','fiction'),('Science Fiction','science-fiction'),('Mystery & Thriller','mystery-thriller'),('Romance','romance'),('Business & Finance','business-finance'),('Self-Help','self-help'),('Programming & Tech','programming-tech'),('Biography','biography')]
+            for name, slug in defaults:
+                if not Category.query.filter_by(slug=slug).first():
+                    db.session.add(Category(name=name, slug=slug, display_order=defaults.index((name,slug))))
+            db.session.commit()
+        app._db_initialized = True
+
